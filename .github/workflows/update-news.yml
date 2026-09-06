@@ -2,6 +2,9 @@ name: Update XTIUSD live news
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/update-news.yml"
   schedule:
     - cron: "*/10 * * * *"
 
@@ -74,14 +77,7 @@ jobs:
                           tags.append("EIA")
                       if any(k in tl for k in ("supply", "production", "refinery", "pipeline", "sanction", "hormuz", "iran", "saudi", "russia", "petroleum")):
                           tags.append("Supply")
-                      items.append({
-                          "title": title,
-                          "url": link,
-                          "published": dt.isoformat(),
-                          "source": source,
-                          "category": "Crude Oil",
-                          "tags": tags or ["WTI"]
-                      })
+                      items.append({"title": title, "url": link, "published": dt.isoformat(), "source": source, "category": "Crude Oil", "tags": tags or ["WTI"]})
               except Exception as e:
                   print(f"feed error [{default_source}]: {e}")
 
