@@ -84,3 +84,5 @@ jobs:
           fi
           git commit -m 'style: remove spider web from header'
           git push
+
+# Triggered once more so the cleanup runs immediately on the existing workflow file.
