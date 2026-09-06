@@ -15,10 +15,10 @@
 .side{display:grid;gap:18px;align-content:start}.sideCard{padding:19px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow);position:relative}.sideCard:after{content:"";position:absolute;right:0;top:0;border-style:solid;border-width:0 0 17px 17px;border-color:transparent transparent var(--orange) transparent}.sideTitle{font-size:18px;font-weight:900;margin:0 0 15px}.sideTitle span{color:var(--orange)}.mini{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #eee;font-size:13px}.mini:last-child{border-bottom:0}.rank{width:24px;height:24px;background:var(--orange);color:#fff;font-weight:900;display:inline-grid;place-items:center;margin-right:8px;clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px)}.empty{padding:60px 20px;text-align:center;color:#777}.load{margin:14px;border:1px solid #ddd;background:#fff;width:calc(100% - 28px);padding:12px;font-weight:800;cursor:pointer}.load:hover{border-color:var(--orange);color:var(--orange)}footer{text-align:center;color:#888;font-size:11px;margin-top:20px}
 #toTop{position:fixed;right:24px;bottom:24px;width:54px;height:54px;border:0;border-radius:50%;background:var(--orange);color:#fff;font-size:25px;font-weight:900;line-height:1;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 22px rgba(255,120,0,.32);z-index:999;opacity:0;visibility:hidden;transform:translateY(12px);transition:opacity .25s ease,transform .25s ease,visibility .25s ease}#toTop.show{opacity:1;visibility:visible;transform:translateY(0)}#toTop:hover{background:#e96800;transform:translateY(-2px)}#toTop:focus-visible{outline:3px solid #111;outline-offset:3px}
 @media(max-width:1100px){.nav{overflow-x:auto}.nav button{padding:0 14px}.ticker{grid-template-columns:repeat(2,1fr)}.clockBox{display:none}.main{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}.search{width:230px}.analysisGrid{grid-template-columns:1fr}}@media(max-width:700px){.wrap{width:calc(100% - 16px)}.heroHead{padding:18px 14px}.logo{width:58px;height:58px}.brandText h1{font-size:30px}.brandText h1 small{font-size:12px;letter-spacing:4px}.headRight{display:none}.nav{margin:0 5px}.search{min-width:190px}.ticker{grid-template-columns:1fr 1fr}.card{grid-template-columns:86px 1fr}.thumb{width:86px;height:76px}.time{grid-column:2;text-align:left}.side{grid-template-columns:1fr}.sectionHead h2{font-size:19px}#toTop{right:16px;bottom:16px;width:50px;height:50px}}
-\n/* Animated spider-web network in the top XTIUSD header */\n.heroHead{position:relative;overflow:hidden}\n#spiderCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.48}\n.heroHead>*:not(#spiderCanvas){position:relative;z-index:1}\n</style>
+</style>
 </head>
 <body><div class="top"></div><div class="wrap">
-<header class="heroHead"><canvas id="spiderCanvas" aria-hidden="true"></canvas><div class="brand"><div class="logo"><span>🛢</span></div><div class="brandText"><h1>XTI<b>USD</b> <small>LIVE NEWS</small></h1><div class="tagline">REAL NEWS <i>•</i> REAL MARKETS <i>•</i> REAL OPPORTUNITIES</div></div></div><div class="headRight"><span>CRUDE OIL NEWS. &nbsp; SMARTER TRADING.</span><strong>STAY INFORMED &nbsp; / &nbsp; STAY AHEAD</strong></div></header>
+<header class="heroHead"><div class="brand"><div class="logo"><span>🛢</span></div><div class="brandText"><h1>XTI<b>USD</b> <small>LIVE NEWS</small></h1><div class="tagline">REAL NEWS <i>•</i> REAL MARKETS <i>•</i> REAL OPPORTUNITIES</div></div></div><div class="headRight"><span>CRUDE OIL NEWS. &nbsp; SMARTER TRADING.</span><strong>STAY INFORMED &nbsp; / &nbsp; STAY AHEAD</strong></div></header>
 <nav class="nav"><button class="active" data-filter="all">▤ &nbsp; All News</button><button data-filter="WTI">● &nbsp; WTI / Crude Oil</button><button data-filter="OPEC">♟ &nbsp; OPEC</button><button data-filter="EIA">▥ &nbsp; EIA / Inventories</button><button data-filter="Supply">◉ &nbsp; Supply & Geopolitics</button><button id="analysisTab" data-analysis="1">↗ &nbsp; Market Analysis</button><input id="search" class="search" placeholder="⌕  Search news…"></nav>
 <section class="ticker"><div class="box"><div class="label">🛢 WTI CRUDE OIL</div><div class="value">XTIUSD <span class="green">• LIVE</span></div></div><div class="box"><div class="label">OIL MARKET</div><div class="value">HEADLINES <span class="green">● LIVE</span></div></div><div class="box"><div class="label">NEWS SOURCES</div><div class="value" id="sourceCount">—</div></div><div class="box"><div class="label">HEADLINES</div><div class="value" id="count">—</div></div><div class="box clockBox"><div class="clock"></div><div><b id="date">—</b><br><span id="clockText" class="label">—</span></div></div></section>
 <section id="analysis" class="analysis"><div class="sectionHead"><div><h2>XTIUSD <span>Market Analysis</span></h2><p>Rule-based outlook generated from the live crude-oil feed</p></div><div class="refresh">Updated: <b id="analysisUpdated">—</b></div></div><div id="analysisGrid" class="analysisGrid"></div><div class="disclaimer">For market information only. This is a rule-based outlook, not financial advice. Probabilities are indicative and can change as new information arrives.</div></section>
@@ -36,59 +36,5 @@ function drawAnalysis(data){const g=document.querySelector('#analysisGrid');cons
 async function loadAnalysis(){try{const r=await fetch(ANALYSIS_URL+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error();const j=await r.json();drawAnalysis(j);document.querySelector('#analysisUpdated').textContent=j.generated_at?new Date(j.generated_at).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Live'}catch(e){document.querySelector('#analysisGrid').innerHTML='<div class="empty">Market analysis is waiting for the analysis engine update.</div>'}}
 function tick(){const d=new Date();document.querySelector('#date').textContent=d.toLocaleDateString('en-IN',{month:'short',day:'numeric',year:'numeric'});document.querySelector('#clockText').textContent=d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+' IST'}
 document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-filter]').forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.filter;shown=30;document.querySelector('#analysis').style.display='none';document.querySelector('#newsMain').style.display='grid';render()}));document.querySelector('#analysisTab').addEventListener('click',()=>{document.querySelectorAll('[data-filter]').forEach(x=>x.classList.remove('active'));document.querySelector('#analysisTab').classList.add('active');document.querySelector('#analysis').style.display='block';document.querySelector('#newsMain').style.display='none';loadAnalysis()});document.querySelector('#search').addEventListener('input',()=>{shown=30;render()});document.querySelector('#more').addEventListener('click',()=>{shown+=30;render()});const topBtn=document.querySelector('#toTop');window.addEventListener('scroll',()=>topBtn.classList.toggle('show',window.scrollY>450),{passive:true});topBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));tick();setInterval(tick,1000);load();loadAnalysis();setInterval(load,600000);setInterval(loadAnalysis,600000);
-</script>\n<script>\n(function(){\n  const canvas=document.getElementById('spiderCanvas');\n  const host=document.querySelector('.heroHead');\n  if(!canvas||!host)return;\n  const ctx=canvas.getContext('2d');\n  let w=0,h=0,dpr=1,points=[];\n  const COUNT=34,SPEED=1.65,MAX_LINK=155;\n  function resize(){\n    const r=host.getBoundingClientRect();\n    dpr=Math.min(window.devicePixelRatio||1,2); w=Math.max(1,r.width); h=Math.max(1,r.height);\n    canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);\n    canvas.style.width=w+'px'; canvas.style.height=h+'px'; ctx.setTransform(dpr,0,0,dpr,0,0);\n    if(points.length===0)for(let i=0;i<COUNT;i++)points.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*SPEED,vy:(Math.random()-.5)*SPEED,r:1.2+Math.random()*1.8});\n    else points.forEach(p=>{p.x=Math.min(w,Math.max(0,p.x));p.y=Math.min(h,Math.max(0,p.y));});\n  }\n  function tick(){\n    ctx.clearRect(0,0,w,h);\n    for(const p of points){\n      p.x+=p.vx; p.y+=p.vy;\n      if(p.x<-10||p.x>w+10)p.vx*=-1;\n      if(p.y<-10||p.y>h+10)p.vy*=-1;\n    }\n    for(let i=0;i<points.length;i++){\n      for(let j=i+1;j<points.length;j++){\n        const a=points[i],b=points[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);\n        if(d<MAX_LINK){\n          const alpha=(1-d/MAX_LINK)*.30;\n          ctx.strokeStyle='rgba(255,120,0,'+alpha+')'; ctx.lineWidth=1;\n          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();\n        }\n      }\n    }\n    for(const p of points){\n      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);\n      ctx.fillStyle='rgba(255,120,0,.72)';ctx.fill();\n    }\n    requestAnimationFrame(tick);\n  }\n  resize(); window.addEventListener('resize',resize,{passive:true}); tick();\n})();\n</script>\n<script id="xti-spider-animation">
-(()=>{
-  const canvas=document.getElementById('spiderCanvas');
-  const header=document.querySelector('.heroHead');
-  if(!canvas||!header)return;
-  const ctx=canvas.getContext('2d');
-  let nodes=[];
-  let w=0,h=0;
-  const speed=1.45;
-  function resize(){
-    const dpr=Math.min(window.devicePixelRatio||1,2);
-    w=header.clientWidth; h=header.clientHeight;
-    canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);
-    canvas.style.width=w+'px'; canvas.style.height=h+'px';
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    nodes=Array.from({length:30},()=>({
-      x:w*(0.46+Math.random()*0.34),
-      y:h*(0.10+Math.random()*0.80),
-      vx:(Math.random()-.5)*0.42*speed,
-      vy:(Math.random()-.5)*0.34*speed,
-      r:Math.random()*1.8+1.0
-    }));
-  }
-  function frame(){
-    ctx.clearRect(0,0,w,h);
-    const maxDist=Math.min(145,w*.18);
-    for(let i=0;i<nodes.length;i++){
-      const a=nodes[i];
-      a.x+=a.vx; a.y+=a.vy;
-      if(a.x<w*.44||a.x>w*.83)a.vx*=-1;
-      if(a.y<h*.06||a.y>h*.94)a.vy*=-1;
-      for(let j=i+1;j<nodes.length;j++){
-        const b=nodes[j];
-        const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);
-        if(d<maxDist){
-          const alpha=(1-d/maxDist)*0.24;
-          ctx.strokeStyle=`rgba(255,120,0,${alpha})`;
-          ctx.lineWidth=0.8;
-          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-        }
-      }
-    }
-    for(const n of nodes){
-      ctx.fillStyle='rgba(255,120,0,.70)';
-      ctx.shadowColor='rgba(255,120,0,.45)';
-      ctx.shadowBlur=7;
-      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fill();
-    }
-    ctx.shadowBlur=0;
-    requestAnimationFrame(frame);
-  }
-  resize(); frame();
-  window.addEventListener('resize',resize,{passive:true});
-})();
-</script>
+</script>\n<script>\n(function(){\n  const canvas=document.getElementById('spiderCanvas');\n  const host=document.querySelector('.heroHead');\n  if(!canvas||!host)return;\n  const ctx=canvas.getContext('2d');\n  let w=0,h=0,dpr=1,points=[];\n  const COUNT=34,SPEED=1.65,MAX_LINK=155;\n  function resize(){\n    const r=host.getBoundingClientRect();\n    dpr=Math.min(window.devicePixelRatio||1,2); w=Math.max(1,r.width); h=Math.max(1,r.height);\n    canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);\n    canvas.style.width=w+'px'; canvas.style.height=h+'px'; ctx.setTransform(dpr,0,0,dpr,0,0);\n    if(points.length===0)for(let i=0;i<COUNT;i++)points.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*SPEED,vy:(Math.random()-.5)*SPEED,r:1.2+Math.random()*1.8});\n    else points.forEach(p=>{p.x=Math.min(w,Math.max(0,p.x));p.y=Math.min(h,Math.max(0,p.y));});\n  }\n  function tick(){\n    ctx.clearRect(0,0,w,h);\n    for(const p of points){\n      p.x+=p.vx; p.y+=p.vy;\n      if(p.x<-10||p.x>w+10)p.vx*=-1;\n      if(p.y<-10||p.y>h+10)p.vy*=-1;\n    }\n    for(let i=0;i<points.length;i++){\n      for(let j=i+1;j<points.length;j++){\n        const a=points[i],b=points[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);\n        if(d<MAX_LINK){\n          const alpha=(1-d/MAX_LINK)*.30;\n          ctx.strokeStyle='rgba(255,120,0,'+alpha+')'; ctx.lineWidth=1;\n          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();\n        }\n      }\n    }\n    for(const p of points){\n      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);\n      ctx.fillStyle='rgba(255,120,0,.72)';ctx.fill();\n    }\n    requestAnimationFrame(tick);\n  }\n  resize(); window.addEventListener('resize',resize,{passive:true}); tick();\n})();\n</script>\n
 </body></html>
