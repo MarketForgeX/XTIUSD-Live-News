@@ -1,0 +1,36 @@
+{
+  "generated_at": "2026-09-06T00:00:00Z",
+  "method": "Free rule-based market intelligence from live crude-oil headlines. No paid API or AI API required.",
+  "periods": {
+    "24h": {
+      "label": "NEXT 24 HOURS",
+      "bias": "Neutral",
+      "score": 50,
+      "confidence": "Moderate",
+      "summary": "Near-term direction is driven by the balance between geopolitical supply risk, OPEC+ policy signals and fresh oil-market headlines. Expect elevated volatility when major supply developments emerge.",
+      "bullish_case": "Supply disruption or escalation risk can support WTI prices.",
+      "bearish_case": "Improving supply conditions or weaker demand expectations can pressure WTI.",
+      "drivers": ["Geopolitical risk", "OPEC+ policy", "Fresh oil-market headlines"]
+    },
+    "7d": {
+      "label": "NEXT 7 DAYS",
+      "bias": "Neutral",
+      "score": 50,
+      "confidence": "Moderate",
+      "summary": "The weekly outlook will weigh OPEC+ decisions, inventory developments, production and refinery news, demand signals and geopolitical supply risks.",
+      "bullish_case": "Persistent supply disruption risk and supportive OPEC+ signals favor upside.",
+      "bearish_case": "Higher inventories, stronger production or weaker demand signals favor downside.",
+      "drivers": ["EIA inventories", "OPEC+ supply", "Oil demand", "Geopolitics"]
+    },
+    "1m": {
+      "label": "NEXT 1 MONTH",
+      "bias": "Neutral",
+      "score": 50,
+      "confidence": "Moderate",
+      "summary": "The monthly view focuses on the structural supply-demand balance, OPEC+ policy, inventory trends and geopolitical developments affecting crude flows.",
+      "bullish_case": "Tighter supply and resilient demand can maintain an upside bias.",
+      "bearish_case": "Rising supply, weak demand or easing geopolitical risk can create downside pressure.",
+      "drivers": ["Global supply-demand balance", "OPEC+", "Inventory trend", "Geopolitical risk"]
+    }
+  }
+}
