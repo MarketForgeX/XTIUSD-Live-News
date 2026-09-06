@@ -30,29 +30,37 @@ jobs:
               ("Google News", "https://news.google.com/rss/search?q=(WTI+OR+%22crude+oil%22+OR+%22West+Texas+Intermediate%22+OR+OPEC)+oil&hl=en-US&gl=US&ceid=US:en"),
               ("Google News", "https://news.google.com/rss/search?q=oil+prices+WTI+OPEC+EIA&hl=en-US&gl=US&ceid=US:en"),
               ("Google News", "https://news.google.com/rss/search?q=WTI+crude+oil+inventory+supply+Iran+Saudi+OPEC&hl=en-US&gl=US&ceid=US:en"),
+              ("S&P Global", "https://www.spglobal.com/content/spglobal/energy/us/en/rss/oil.xml"),
+              ("S&P Global", "https://www.spglobal.com/content/spglobal/energy/us/en/rss/oil-crude.xml"),
+              ("EIA", "https://www.eia.gov/rss/press_room.xml"),
+              ("EIA", "https://www.eia.gov/rss/todayinenergy.xml"),
+              ("Rigzone", "https://www.rigzone.com/news/rss/rigzone_latest.aspx"),
           ]
 
-          keywords = re.compile(r"\b(wti|xtiusd|crude oil|west texas intermediate|oil prices?|opec|opec\+|eia|inventor(?:y|ies)|oil supply|production|refinery|pipeline|sanctions|strategic petroleum reserve|spr|hormuz|middle east|iran|saudi|russia|ukraine|oil demand)\b", re.I)
+          keywords = re.compile(r"\b(wti|xtiusd|crude oil|west texas intermediate|oil prices?|opec|opec\+|eia|inventor(?:y|ies)|oil supply|production|refinery|pipeline|sanctions|strategic petroleum reserve|spr|hormuz|middle east|iran|saudi|russia|ukraine|oil demand|petroleum)\b", re.I)
           items, seen = [], set()
 
           def text(el, name):
               node = el.find(name)
               return (node.text or "").strip() if node is not None else ""
 
-          for source, url in feeds:
+          for default_source, url in feeds:
               try:
                   req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 XTIUSD-Live-News"})
                   with urllib.request.urlopen(req, timeout=20) as r:
                       root = ET.fromstring(r.read())
                   for item in root.findall(".//item"):
-                      title, link, pub = text(item, "title"), text(item, "link"), text(item, "pubDate")
+                      title = text(item, "title")
+                      link = text(item, "link")
+                      pub = text(item, "pubDate") or text(item, "published") or text(item, "updated")
+                      source = text(item, "source") or default_source
                       if not title or not link or not keywords.search(title):
                           continue
                       try:
                           dt = parsedate_to_datetime(pub).astimezone(timezone.utc)
                       except Exception:
                           dt = datetime.now(timezone.utc)
-                      key = link.lower()
+                      key = link.lower().strip()
                       if key in seen:
                           continue
                       seen.add(key)
@@ -64,7 +72,7 @@ jobs:
                           tags.append("OPEC")
                       if any(k in tl for k in ("eia", "inventory", "inventories")):
                           tags.append("EIA")
-                      if any(k in tl for k in ("supply", "production", "refinery", "pipeline", "sanction", "hormuz", "iran", "saudi", "russia")):
+                      if any(k in tl for k in ("supply", "production", "refinery", "pipeline", "sanction", "hormuz", "iran", "saudi", "russia", "petroleum")):
                           tags.append("Supply")
                       items.append({
                           "title": title,
@@ -75,7 +83,7 @@ jobs:
                           "tags": tags or ["WTI"]
                       })
               except Exception as e:
-                  print(f"feed error: {e}")
+                  print(f"feed error [{default_source}]: {e}")
 
           items.sort(key=lambda x: x["published"], reverse=True)
           items = items[:150]
