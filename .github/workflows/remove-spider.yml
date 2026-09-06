@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Remove spider web only
+      - name: Clean header and animate live dots
         shell: python
         run: |
           from pathlib import Path
@@ -26,34 +26,17 @@ jobs:
           html = path.read_text(encoding='utf-8')
           original = html
 
-          # Remove the spider canvas from the header while preserving the original logo and right-side text.
+          # Remove any remaining spider canvas.
           html = re.sub(r'<canvas\s+id=["\']spiderCanvas["\'][^>]*></canvas>', '', html, flags=re.I)
 
-          # Remove the spider-web CSS block.
-          html = re.sub(
-              r'\\?n?/\*\s*Animated spider-web network in the top XTIUSD header\s*\*/.*?\\?n?</style>',
-              '</style>',
-              html,
-              flags=re.S | re.I,
-          )
+          # Remove any remaining spider animation scripts.
+          html = re.sub(r'<script\s+id=["\']xti-spider-animation["\'][^>]*>.*?</script>', '', html, flags=re.S | re.I)
+          html = re.sub(r'<script>\s*\(function\(\)\{\s*const canvas=document\.getElementById\(["\']spiderCanvas["\']\).*?const COUNT=34.*?</script>', '', html, flags=re.S | re.I)
 
-          # Remove the first spider animation script (the 34-node version).
-          html = re.sub(
-              r'<script>\s*\(function\(\)\{\s*const canvas=document\.getElementById\(["\']spiderCanvas["\']\).*?const COUNT=34.*?</script>',
-              '',
-              html,
-              flags=re.S | re.I,
-          )
+          # Remove any remaining spider-web CSS comment/block without touching the rest of the stylesheet.
+          html = re.sub(r'/\*\s*Animated spider-web network in the top XTIUSD header\s*\*/.*?(?=</style>)', '', html, flags=re.S | re.I)
 
-          # Remove the second spider animation script (the constrained 30-node version).
-          html = re.sub(
-              r'<script\s+id=["\']xti-spider-animation["\'][^>]*>.*?</script>',
-              '',
-              html,
-              flags=re.S | re.I,
-          )
-
-          # Safety check: the original header must remain.
+          # Restore/keep the original two header sections.
           required = [
               'XTI<b>USD</b>',
               'LIVE NEWS',
@@ -66,11 +49,25 @@ jobs:
           if missing:
               raise SystemExit(f'Header safety check failed; missing: {missing}')
 
+          # Make both LIVE indicators blink continuously.
+          html = html.replace(
+              'XTIUSD <span class="green">• LIVE</span>',
+              'XTIUSD <span class="green live-status"><i>•</i> LIVE</span>'
+          )
+          html = html.replace(
+              'HEADLINES <span class="green">● LIVE</span>',
+              'HEADLINES <span class="green live-status"><i>●</i> LIVE</span>'
+          )
+
+          blink_css = '''\n.live-status i{font-style:normal;display:inline-block;animation:liveBlink 1.15s ease-in-out infinite;transform-origin:center}@keyframes liveBlink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.18;transform:scale(.72)}}\n'''
+          if '.live-status i{font-style:normal' not in html:
+              html = html.replace('</style>', blink_css + '</style>', 1)
+
           if html != original:
               path.write_text(html, encoding='utf-8')
-              print('Spider web removed; original header preserved.')
+              print('Spider removed and LIVE dots set to blinking animation.')
           else:
-              print('No spider code found; nothing to change.')
+              print('No changes required.')
 
       - name: Commit and push
         shell: bash
@@ -82,7 +79,5 @@ jobs:
             echo 'No changes to commit.'
             exit 0
           fi
-          git commit -m 'style: remove spider web from header'
+          git commit -m 'style: animate XTIUSD and headlines live dots'
           git push
-
-# Triggered once more so the cleanup runs immediately on the existing workflow file.
