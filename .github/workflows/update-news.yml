@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build news feed
+      - name: Build news feed and market analysis
         shell: bash
         run: |
           python <<'PY'
@@ -26,8 +26,9 @@ jobs:
           import re
           import urllib.request
           import xml.etree.ElementTree as ET
-          from datetime import datetime, timezone
+          from datetime import datetime, timezone, timedelta
           from email.utils import parsedate_to_datetime
+          from math import exp
 
           feeds = [
               ("Google News", "https://news.google.com/rss/search?q=(WTI+OR+%22crude+oil%22+OR+%22West+Texas+Intermediate%22+OR+OPEC)+oil&hl=en-US&gl=US&ceid=US:en"),
@@ -42,6 +43,7 @@ jobs:
 
           keywords = re.compile(r"\b(wti|xtiusd|crude oil|west texas intermediate|oil prices?|opec|opec\+|eia|inventor(?:y|ies)|oil supply|production|refinery|pipeline|sanctions|strategic petroleum reserve|spr|hormuz|middle east|iran|saudi|russia|ukraine|oil demand|petroleum)\b", re.I)
           items, seen = [], set()
+          now = datetime.now(timezone.utc)
 
           def text(el, name):
               node = el.find(name)
@@ -62,7 +64,7 @@ jobs:
                       try:
                           dt = parsedate_to_datetime(pub).astimezone(timezone.utc)
                       except Exception:
-                          dt = datetime.now(timezone.utc)
+                          dt = now
                       key = link.lower().strip()
                       if key in seen:
                           continue
@@ -84,16 +86,118 @@ jobs:
           items.sort(key=lambda x: x["published"], reverse=True)
           items = items[:150]
           with open("data/news.json", "w", encoding="utf-8") as f:
-              json.dump({"updated_at": datetime.now(timezone.utc).isoformat(), "items": items}, f, ensure_ascii=False, indent=2)
-          print(f"wrote {len(items)} headlines")
+              json.dump({"updated_at": now.isoformat(), "items": items}, f, ensure_ascii=False, indent=2)
+
+          bullish = {
+              "supply disruption": 3.0, "supply disruption": 3.0, "production cut": 3.0,
+              "output cut": 3.0, "opec+ cut": 3.0, "opec cut": 3.0, "inventory draw": 2.5,
+              "inventories fall": 2.5, "inventory falls": 2.5, "inventories decline": 2.5,
+              "stockpiles fall": 2.0, "sanctions": 1.7, "hormuz": 2.3, "shipping disruption": 2.0,
+              "refinery outage": 1.7, "pipeline disruption": 1.8, "war": 1.0, "escalation": 1.2,
+              "supply risk": 1.8, "tight supply": 2.0, "strong demand": 1.2, "demand rises": 1.2,
+          }
+          bearish = {
+              "production increase": 3.0, "output increase": 3.0, "opec+ increase": 3.0,
+              "opec increase": 3.0, "inventory build": 2.5, "inventories rise": 2.5,
+              "inventories increase": 2.5, "stockpiles rise": 2.0, "supply increase": 2.0,
+              "supply rises": 2.0, "production rises": 2.5, "refinery restart": 1.5,
+              "demand slowdown": 2.0, "weak demand": 2.0, "recession": 1.5, "ceasefire": 1.2,
+              "de-escalation": 1.2, "exports rise": 1.8, "supply recovery": 1.7,
+          }
+          topic_weights = {
+              "geopolitics": ("iran", "hormuz", "middle east", "war", "escalation", "sanction", "russia", "ukraine"),
+              "opec+ policy": ("opec", "output", "production cut", "production increase"),
+              "inventories": ("inventory", "inventories", "stockpiles", "eia"),
+              "supply": ("supply", "production", "refinery", "pipeline", "exports"),
+              "demand": ("demand", "recession", "economic", "growth"),
+          }
+
+          def make_analysis(hours, label):
+              cutoff = now - timedelta(hours=hours)
+              relevant = []
+              for item in items:
+                  try:
+                      dt = datetime.fromisoformat(item["published"].replace("Z", "+00:00"))
+                  except Exception:
+                      continue
+                  if dt < cutoff:
+                      continue
+                  age_hours = max(0.0, (now - dt).total_seconds() / 3600.0)
+                  half_life = max(hours / 3.0, 8.0)
+                  recency = exp(-age_hours / half_life)
+                  title = item["title"].lower()
+                  score = 0.0
+                  for phrase, weight in bullish.items():
+                      if phrase in title:
+                          score += weight * recency
+                  for phrase, weight in bearish.items():
+                      if phrase in title:
+                          score -= weight * recency
+                  if score != 0:
+                      relevant.append((score, item))
+
+              raw = sum(x[0] for x in relevant)
+              count = len(relevant)
+              normalized = max(-50, min(50, raw * (1.5 if hours <= 24 else 1.0 if hours <= 168 else 0.75)))
+              score = int(round(50 + normalized))
+              if score >= 62:
+                  bias = "Bullish"
+              elif score <= 38:
+                  bias = "Bearish"
+              else:
+                  bias = "Neutral"
+
+              if count >= 12:
+                  confidence = "High"
+              elif count >= 5:
+                  confidence = "Moderate"
+              else:
+                  confidence = "Low"
+
+              topics = []
+              for topic, words in topic_weights.items():
+                  n = sum(1 for _, item in relevant if any(w in item["title"].lower() for w in words))
+                  if n:
+                      topics.append((n, topic))
+              topics.sort(reverse=True)
+              drivers = [x[1].title() for x in topics[:4]] or ["Fresh crude-oil headlines"]
+
+              if bias == "Bullish":
+                  summary = f"Recent crude-oil headlines show a positive supply-risk bias, with {count} materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure."
+              elif bias == "Bearish":
+                  summary = f"Recent crude-oil headlines show a negative supply-demand bias, with {count} materially relevant signals in the selected window. Higher supply, inventory builds or weaker demand expectations could pressure WTI."
+              else:
+                  summary = f"Recent crude-oil headlines remain mixed, with {count} materially relevant signals in the selected window. WTI direction can change quickly as OPEC+, inventories, demand and geopolitical supply risks develop."
+
+              bullish_case = "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case."
+              bearish_case = "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case."
+
+              return {
+                  "label": label, "bias": bias, "score": score, "confidence": confidence,
+                  "summary": summary, "bullish_case": bullish_case, "bearish_case": bearish_case,
+                  "drivers": drivers, "headline_count": count
+              }
+
+          analysis = {
+              "generated_at": now.isoformat(),
+              "method": "Free rule-based market intelligence recalculated from the live crude-oil headline feed. No paid API or AI API required.",
+              "periods": {
+                  "24h": make_analysis(24, "NEXT 24 HOURS"),
+                  "7d": make_analysis(24 * 7, "NEXT 7 DAYS"),
+                  "1m": make_analysis(24 * 30, "NEXT 1 MONTH"),
+              }
+          }
+          with open("data/market-analysis.json", "w", encoding="utf-8") as f:
+              json.dump(analysis, f, ensure_ascii=False, indent=2)
+          print(f"wrote {len(items)} headlines and dynamic analysis")
           PY
 
-      - name: Commit feed
+      - name: Commit feed and analysis
         shell: bash
         run: |
           git config user.name "marketforgex-news-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/news.json
+          git add data/news.json data/market-analysis.json
           git diff --cached --quiet && exit 0
-          git commit -m "chore: refresh crude oil headlines"
+          git commit -m "chore: refresh crude oil headlines and market analysis"
           git push
