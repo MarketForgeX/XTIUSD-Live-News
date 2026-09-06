@@ -16,59 +16,73 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build news feed
-        shell: python
+        shell: bash
         run: |
-          import json, re, urllib.request, xml.etree.ElementTree as ET
+          python <<'PY'
+          import json
+          import re
+          import urllib.request
+          import xml.etree.ElementTree as ET
           from datetime import datetime, timezone
           from email.utils import parsedate_to_datetime
 
           feeds = [
-            ("Google News", "https://news.google.com/rss/search?q=(WTI+OR+%22crude+oil%22+OR+%22West+Texas+Intermediate%22+OR+OPEC)+oil&hl=en-US&gl=US&ceid=US:en"),
-            ("Google News", "https://news.google.com/rss/search?q=oil+prices+WTI+OPEC+EIA&hl=en-US&gl=US&ceid=US:en"),
+              ("Google News", "https://news.google.com/rss/search?q=(WTI+OR+%22crude+oil%22+OR+%22West+Texas+Intermediate%22+OR+OPEC)+oil&hl=en-US&gl=US&ceid=US:en"),
+              ("Google News", "https://news.google.com/rss/search?q=oil+prices+WTI+OPEC+EIA&hl=en-US&gl=US&ceid=US:en"),
+              ("Google News", "https://news.google.com/rss/search?q=WTI+crude+oil+inventory+supply+Iran+Saudi+OPEC&hl=en-US&gl=US&ceid=US:en"),
           ]
 
-          keywords = re.compile(r"\b(wti|xtiusd|crude oil|west texas intermediate|oil prices?|opec|opec\+|eia|inventor(?:y|ies)|oil supply|production|refinery|pipeline|sanctions|brent|strategic petroleum reserve|spr|hormuz|middle east|iran|saudi|russia|ukraine)\b", re.I)
-          items = []
-          seen = set()
+          keywords = re.compile(r"\b(wti|xtiusd|crude oil|west texas intermediate|oil prices?|opec|opec\+|eia|inventor(?:y|ies)|oil supply|production|refinery|pipeline|sanctions|strategic petroleum reserve|spr|hormuz|middle east|iran|saudi|russia|ukraine|oil demand)\b", re.I)
+          items, seen = [], set()
 
-          def text(el, name, default=""):
-            node = el.find(name)
-            return (node.text or default).strip() if node is not None else default
+          def text(el, name):
+              node = el.find(name)
+              return (node.text or "").strip() if node is not None else ""
 
           for source, url in feeds:
-            try:
-              req = urllib.request.Request(url, headers={"User-Agent":"Mozilla/5.0"})
-              with urllib.request.urlopen(req, timeout=20) as r:
-                root = ET.fromstring(r.read())
-              for item in root.findall(".//item"):
-                title = text(item, "title")
-                link = text(item, "link")
-                pub = text(item, "pubDate")
-                if not title or not link or not keywords.search(title):
-                  continue
-                try:
-                  dt = parsedate_to_datetime(pub).astimezone(timezone.utc)
-                except Exception:
-                  dt = datetime.now(timezone.utc)
-                key = link.strip().lower()
-                if key in seen:
-                  continue
-                seen.add(key)
-                cats = []
-                tl = title.lower()
-                if any(k in tl for k in ("wti", "crude oil", "west texas", "oil price")): cats.append("WTI")
-                if "opec" in tl: cats.append("OPEC")
-                if any(k in tl for k in ("eia", "inventory", "inventories")): cats.append("EIA")
-                if any(k in tl for k in ("supply", "production", "refinery", "pipeline", "sanction", "hormuz", "iran", "saudi", "russia")): cats.append("Supply")
-                items.append({"title": title, "url": link, "published": dt.isoformat(), "source": source, "category": "Crude Oil", "tags": cats or ["WTI"]})
-            except Exception as e:
-              print(f"feed error: {e}")
+              try:
+                  req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 XTIUSD-Live-News"})
+                  with urllib.request.urlopen(req, timeout=20) as r:
+                      root = ET.fromstring(r.read())
+                  for item in root.findall(".//item"):
+                      title, link, pub = text(item, "title"), text(item, "link"), text(item, "pubDate")
+                      if not title or not link or not keywords.search(title):
+                          continue
+                      try:
+                          dt = parsedate_to_datetime(pub).astimezone(timezone.utc)
+                      except Exception:
+                          dt = datetime.now(timezone.utc)
+                      key = link.lower()
+                      if key in seen:
+                          continue
+                      seen.add(key)
+                      tl = title.lower()
+                      tags = []
+                      if any(k in tl for k in ("wti", "crude oil", "west texas", "oil price")):
+                          tags.append("WTI")
+                      if "opec" in tl:
+                          tags.append("OPEC")
+                      if any(k in tl for k in ("eia", "inventory", "inventories")):
+                          tags.append("EIA")
+                      if any(k in tl for k in ("supply", "production", "refinery", "pipeline", "sanction", "hormuz", "iran", "saudi", "russia")):
+                          tags.append("Supply")
+                      items.append({
+                          "title": title,
+                          "url": link,
+                          "published": dt.isoformat(),
+                          "source": source,
+                          "category": "Crude Oil",
+                          "tags": tags or ["WTI"]
+                      })
+              except Exception as e:
+                  print(f"feed error: {e}")
 
           items.sort(key=lambda x: x["published"], reverse=True)
           items = items[:150]
           with open("data/news.json", "w", encoding="utf-8") as f:
-            json.dump({"updated_at": datetime.now(timezone.utc).isoformat(), "items": items}, f, ensure_ascii=False, indent=2)
+              json.dump({"updated_at": datetime.now(timezone.utc).isoformat(), "items": items}, f, ensure_ascii=False, indent=2)
           print(f"wrote {len(items)} headlines")
+          PY
 
       - name: Commit feed
         shell: bash
