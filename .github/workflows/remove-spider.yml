@@ -1,0 +1,86 @@
+name: Remove spider web header
+
+on:
+  push:
+    paths:
+      - '.github/workflows/remove-spider.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  remove-spider:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Remove spider web only
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          html = path.read_text(encoding='utf-8')
+          original = html
+
+          # Remove the spider canvas from the header while preserving the original logo and right-side text.
+          html = re.sub(r'<canvas\s+id=["\']spiderCanvas["\'][^>]*></canvas>', '', html, flags=re.I)
+
+          # Remove the spider-web CSS block.
+          html = re.sub(
+              r'\\?n?/\*\s*Animated spider-web network in the top XTIUSD header\s*\*/.*?\\?n?</style>',
+              '</style>',
+              html,
+              flags=re.S | re.I,
+          )
+
+          # Remove the first spider animation script (the 34-node version).
+          html = re.sub(
+              r'<script>\s*\(function\(\)\{\s*const canvas=document\.getElementById\(["\']spiderCanvas["\']\).*?const COUNT=34.*?</script>',
+              '',
+              html,
+              flags=re.S | re.I,
+          )
+
+          # Remove the second spider animation script (the constrained 30-node version).
+          html = re.sub(
+              r'<script\s+id=["\']xti-spider-animation["\'][^>]*>.*?</script>',
+              '',
+              html,
+              flags=re.S | re.I,
+          )
+
+          # Safety check: the original header must remain.
+          required = [
+              'XTI<b>USD</b>',
+              'LIVE NEWS',
+              'CRUDE OIL NEWS.',
+              'SMARTER TRADING.',
+              'STAY INFORMED',
+              'STAY AHEAD',
+          ]
+          missing = [x for x in required if x not in html]
+          if missing:
+              raise SystemExit(f'Header safety check failed; missing: {missing}')
+
+          if html != original:
+              path.write_text(html, encoding='utf-8')
+              print('Spider web removed; original header preserved.')
+          else:
+              print('No spider code found; nothing to change.')
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          git config user.name 'marketforgex-news-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'style: remove spider web from header'
+          git push
