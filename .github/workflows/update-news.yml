@@ -89,7 +89,7 @@ jobs:
               json.dump({"updated_at": now.isoformat(), "items": items}, f, ensure_ascii=False, indent=2)
 
           bullish = {
-              "supply disruption": 3.0, "supply disruption": 3.0, "production cut": 3.0,
+              "supply disruption": 3.0, "production cut": 3.0,
               "output cut": 3.0, "opec+ cut": 3.0, "opec cut": 3.0, "inventory draw": 2.5,
               "inventories fall": 2.5, "inventory falls": 2.5, "inventories decline": 2.5,
               "stockpiles fall": 2.0, "sanctions": 1.7, "hormuz": 2.3, "shipping disruption": 2.0,
@@ -169,12 +169,11 @@ jobs:
               else:
                   summary = f"Recent crude-oil headlines remain mixed, with {count} materially relevant signals in the selected window. WTI direction can change quickly as OPEC+, inventories, demand and geopolitical supply risks develop."
 
-              bullish_case = "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case."
-              bearish_case = "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case."
-
               return {
                   "label": label, "bias": bias, "score": score, "confidence": confidence,
-                  "summary": summary, "bullish_case": bullish_case, "bearish_case": bearish_case,
+                  "summary": summary,
+                  "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
+                  "bearish_case": "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case.",
                   "drivers": drivers, "headline_count": count
               }
 
@@ -192,12 +191,41 @@ jobs:
           print(f"wrote {len(items)} headlines and dynamic analysis")
           PY
 
-      - name: Commit feed and analysis
+      - name: Restore XTIUSD header layout and animate spider web
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
+
+          s = s.replace(
+              ".heroHead{min-height:142px;display:flex;align-items:center;justify-content:space-between;",
+              ".heroHead{min-height:142px;display:flex;align-items:center;justify-content:flex-start;"
+          )
+          s = s.replace(
+              ".headRight{text-align:right;",
+              ".headRight{margin-left:auto;position:relative;z-index:2;text-align:right;"
+          )
+
+          old_css = "#spiderCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.48}.heroHead>*:not(#spiderCanvas){position:relative;z-index:1}"
+          new_css = "#spiderCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.60}.heroHead>*:not(#spiderCanvas){position:relative;z-index:1}"
+          s = s.replace(old_css, new_css)
+
+          marker = '<script id="xti-spider-animation">'
+          if marker not in s:
+              script = '''<script id="xti-spider-animation">\n(()=>{\n  const canvas=document.getElementById('spiderCanvas');\n  const header=document.querySelector('.heroHead');\n  if(!canvas||!header)return;\n  const ctx=canvas.getContext('2d');\n  let nodes=[];\n  let w=0,h=0;\n  const speed=1.45;\n  function resize(){\n    const dpr=Math.min(window.devicePixelRatio||1,2);\n    w=header.clientWidth; h=header.clientHeight;\n    canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);\n    canvas.style.width=w+'px'; canvas.style.height=h+'px';\n    ctx.setTransform(dpr,0,0,dpr,0,0);\n    nodes=Array.from({length:30},()=>({\n      x:w*(0.46+Math.random()*0.34),\n      y:h*(0.10+Math.random()*0.80),\n      vx:(Math.random()-.5)*0.42*speed,\n      vy:(Math.random()-.5)*0.34*speed,\n      r:Math.random()*1.8+1.0\n    }));\n  }\n  function frame(){\n    ctx.clearRect(0,0,w,h);\n    const maxDist=Math.min(145,w*.18);\n    for(let i=0;i<nodes.length;i++){\n      const a=nodes[i];\n      a.x+=a.vx; a.y+=a.vy;\n      if(a.x<w*.44||a.x>w*.83)a.vx*=-1;\n      if(a.y<h*.06||a.y>h*.94)a.vy*=-1;\n      for(let j=i+1;j<nodes.length;j++){\n        const b=nodes[j];\n        const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);\n        if(d<maxDist){\n          const alpha=(1-d/maxDist)*0.24;\n          ctx.strokeStyle=`rgba(255,120,0,${alpha})`;\n          ctx.lineWidth=0.8;\n          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();\n        }\n      }\n    }\n    for(const n of nodes){\n      ctx.fillStyle='rgba(255,120,0,.70)';\n      ctx.shadowColor='rgba(255,120,0,.45)';\n      ctx.shadowBlur=7;\n      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fill();\n    }\n    ctx.shadowBlur=0;\n    requestAnimationFrame(frame);\n  }\n  resize(); frame();\n  window.addEventListener('resize',resize,{passive:true});\n})();\n</script>'''
+              s = s.replace('</body>', script+'\n</body>')
+
+          p.write_text(s, encoding="utf-8")
+          PY
+
+      - name: Commit feed, analysis and header styling
         shell: bash
         run: |
           git config user.name "marketforgex-news-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/news.json data/market-analysis.json
+          git add data/news.json data/market-analysis.json index.html
           git diff --cached --quiet && exit 0
-          git commit -m "chore: refresh crude oil headlines and market analysis"
+          git commit -m "style: restore left header logo and faster spider web"
           git push
