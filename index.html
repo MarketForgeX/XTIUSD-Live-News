@@ -94,4 +94,11 @@ document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click'
   window.addEventListener('resize',resize,{passive:true});
 })();
 </script>
+<script>
+setInterval(function(){
+  var url = new URL(window.location.href);
+  url.searchParams.set('_refresh', Date.now());
+  window.location.replace(url.toString());
+}, 180000);
+</script>
 </body></html>
