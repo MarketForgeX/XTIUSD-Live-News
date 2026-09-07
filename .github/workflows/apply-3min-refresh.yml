@@ -1,0 +1,39 @@
+name: Apply 3-minute cache-busting refresh
+
+on:
+  push:
+    branches:
+      - demo-3min-hard-refresh
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: demo-3min-hard-refresh
+          fetch-depth: 1
+      - name: Add 3-minute cache-busting reload
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '</body>'
+          script = '''<script>\nsetInterval(function(){\n  var url = new URL(window.location.href);\n  url.searchParams.set('_refresh', Date.now());\n  window.location.replace(url.toString());\n}, 180000);\n</script>\n'''
+          if 'url.searchParams.set(\'_refresh\'' not in s:
+              if marker not in s:
+                  raise SystemExit('Could not find </body> in index.html')
+              s = s.replace(marker, script + marker, 1)
+              p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit change
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet || git commit -m 'Add 3-minute cache-busting refresh'
+          git push origin demo-3min-hard-refresh
