@@ -1,0 +1,39 @@
+name: Update live news label
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update label
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = '<div class="refresh">↻ Auto refresh: <b>10 min</b></div>'
+          new = '<div class="refresh live-feeding"><span class="live-dot">●</span> Live News Feeding</div>'
+          if old not in s:
+              raise SystemExit('Target label not found')
+          s = s.replace(old, new, 1)
+          s = s.replace('.refresh{font-size:12px;color:#777;font-weight:700}', '.refresh{font-size:12px;color:#777;font-weight:700}.live-feeding{color:#e33131!important;display:flex;align-items:center;gap:6px}.live-dot{color:#e33131;display:inline-block;animation:liveBlink 1.15s ease-in-out infinite;transform-origin:center}', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit final change and remove helper workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/update-live-label.yml
+          git add index.html .github/workflows/update-live-label.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "Update live news feeding indicator"
+          git push
