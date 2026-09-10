@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-09-10T17:27:35.707686+00:00",
+  "generated_at": "2026-09-10T19:57:24.152641+00:00",
   "method": "Free rule-based market intelligence recalculated from the live crude-oil headline feed. No paid API or AI API required.",
   "periods": {
     "24h": {
       "label": "NEXT 24 HOURS",
       "bias": "Bullish",
-      "score": 78,
+      "score": 65,
       "confidence": "High",
-      "summary": "Recent crude-oil headlines show a positive supply-risk bias, with 17 materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure.",
+      "summary": "Recent crude-oil headlines show a positive supply-risk bias, with 14 materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure.",
       "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
       "bearish_case": "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case.",
       "drivers": [
@@ -16,14 +16,14 @@
         "Opec+ Policy",
         "Inventories"
       ],
-      "headline_count": 17
+      "headline_count": 14
     },
     "7d": {
       "label": "NEXT 7 DAYS",
       "bias": "Bullish",
-      "score": 81,
+      "score": 73,
       "confidence": "High",
-      "summary": "Recent crude-oil headlines show a positive supply-risk bias, with 21 materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure.",
+      "summary": "Recent crude-oil headlines show a positive supply-risk bias, with 18 materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure.",
       "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
       "bearish_case": "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case.",
       "drivers": [
@@ -32,14 +32,14 @@
         "Opec+ Policy",
         "Inventories"
       ],
-      "headline_count": 21
+      "headline_count": 18
     },
     "1m": {
       "label": "NEXT 1 MONTH",
       "bias": "Bullish",
-      "score": 77,
+      "score": 72,
       "confidence": "High",
-      "summary": "Recent crude-oil headlines show a positive supply-risk bias, with 22 materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure.",
+      "summary": "Recent crude-oil headlines show a positive supply-risk bias, with 19 materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure.",
       "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
       "bearish_case": "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case.",
       "drivers": [
@@ -48,7 +48,7 @@
         "Opec+ Policy",
         "Inventories"
       ],
-      "headline_count": 22
+      "headline_count": 19
     }
   }
 }
