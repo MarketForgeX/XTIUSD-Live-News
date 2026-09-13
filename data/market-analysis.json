@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-12T22:13:56.138847+00:00",
+  "generated_at": "2026-09-13T00:01:57.336942+00:00",
   "method": "Free rule-based market intelligence recalculated from the live crude-oil headline feed. No paid API or AI API required.",
   "periods": {
     "24h": {
@@ -18,7 +18,7 @@
     "7d": {
       "label": "NEXT 7 DAYS",
       "bias": "Bullish",
-      "score": 63,
+      "score": 62,
       "confidence": "High",
       "summary": "Recent crude-oil headlines show a positive supply-risk bias, with 18 materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure.",
       "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
@@ -27,7 +27,7 @@
         "Geopolitics",
         "Supply",
         "Opec+ Policy",
-        "Inventories"
+        "Demand"
       ],
       "headline_count": 18
     },
@@ -43,7 +43,7 @@
         "Geopolitics",
         "Supply",
         "Opec+ Policy",
-        "Inventories"
+        "Demand"
       ],
       "headline_count": 19
     }
