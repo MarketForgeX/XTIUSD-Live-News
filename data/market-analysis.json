@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-23T18:53:20.050756+00:00",
+  "generated_at": "2026-09-23T21:59:48.478517+00:00",
   "method": "Free rule-based market intelligence recalculated from the live crude-oil headline feed. No paid API or AI API required.",
   "periods": {
     "24h": {
@@ -7,35 +7,35 @@
       "bias": "Neutral",
       "score": 53,
       "confidence": "Low",
-      "summary": "Recent crude-oil headlines remain mixed, with 3 materially relevant signals in the selected window. WTI direction can change quickly as OPEC+, inventories, demand and geopolitical supply risks develop.",
-      "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
-      "bearish_case": "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case.",
-      "drivers": [
-        "Supply",
-        "Geopolitics"
-      ],
-      "headline_count": 3
-    },
-    "7d": {
-      "label": "NEXT 7 DAYS",
-      "bias": "Neutral",
-      "score": 59,
-      "confidence": "Moderate",
-      "summary": "Recent crude-oil headlines remain mixed, with 7 materially relevant signals in the selected window. WTI direction can change quickly as OPEC+, inventories, demand and geopolitical supply risks develop.",
+      "summary": "Recent crude-oil headlines remain mixed, with 4 materially relevant signals in the selected window. WTI direction can change quickly as OPEC+, inventories, demand and geopolitical supply risks develop.",
       "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
       "bearish_case": "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case.",
       "drivers": [
         "Geopolitics",
         "Supply"
       ],
-      "headline_count": 7
+      "headline_count": 4
+    },
+    "7d": {
+      "label": "NEXT 7 DAYS",
+      "bias": "Neutral",
+      "score": 59,
+      "confidence": "Moderate",
+      "summary": "Recent crude-oil headlines remain mixed, with 8 materially relevant signals in the selected window. WTI direction can change quickly as OPEC+, inventories, demand and geopolitical supply risks develop.",
+      "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
+      "bearish_case": "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case.",
+      "drivers": [
+        "Geopolitics",
+        "Supply"
+      ],
+      "headline_count": 8
     },
     "1m": {
       "label": "NEXT 1 MONTH",
-      "bias": "Neutral",
-      "score": 61,
+      "bias": "Bullish",
+      "score": 62,
       "confidence": "High",
-      "summary": "Recent crude-oil headlines remain mixed, with 14 materially relevant signals in the selected window. WTI direction can change quickly as OPEC+, inventories, demand and geopolitical supply risks develop.",
+      "summary": "Recent crude-oil headlines show a positive supply-risk bias, with 15 materially relevant signals in the selected window. New supply disruptions, OPEC+ restraint or tighter inventories could extend upside pressure.",
       "bullish_case": "Supply disruption, tighter inventories, OPEC+ restraint or geopolitical escalation would strengthen the upside case.",
       "bearish_case": "Higher production, inventory builds, weaker demand or easing geopolitical risk would strengthen the downside case.",
       "drivers": [
@@ -44,7 +44,7 @@
         "Opec+ Policy",
         "Inventories"
       ],
-      "headline_count": 14
+      "headline_count": 15
     }
   }
 }
